@@ -17,15 +17,19 @@ type MessageBody = {
     /**
      * The value to be converted
      */
-    value: Number;
+    amount: number;
     /**
      * The base ('from') currency (3-letter code)
      */
-    from: String;
+    fromCurrency: string;
     /**
      * The target ('to') currency (3-letter code)
      */
-    to: String
+    toCurrency: string;
+    /**
+     * The email to receive the result at
+     */
+    email: string;
 }
 export async function SendSQSMessage(body: MessageBody) {
     const messageToSend = {

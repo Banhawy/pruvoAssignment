@@ -5,9 +5,10 @@ const router = Router()
 
 router.get('/', (req: Request, res: Response) => {
     SendSQSMessage({
-        value: 90.10,
-        from: 'USD',
-        to: 'EGP'
+        amount: 90.10,
+        fromCurrency: 'USD',
+        toCurrency: 'EGP',
+        email: 'dummy@email.com'
     })
     res.send('Express + TypeScript Server!');
   });
