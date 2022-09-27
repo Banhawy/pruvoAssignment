@@ -1,6 +1,7 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { Squiss, Message } from 'squiss-ts';
 import { ConversionApiService } from './conversion-api/conversion-api.service';
+import { EmailerService } from './emailer/emailer.service';
 
 interface ExchangeRateRequestMessage {
   toCurrency: string;
@@ -15,6 +16,9 @@ interface ConversionRequestMessage extends ExchangeRateRequestMessage {
 export class AppService {
   @Inject(ConversionApiService)
   private readonly exchangeConversionService: ConversionApiService;
+
+  @Inject(EmailerService)
+  private readonly emailService: EmailerService;
 
   getHello(): string {
     return 'Hello World!';
@@ -45,6 +49,7 @@ export class AppService {
 
   isRequestValid(message: any): boolean {
     const doesIncludeUSD = this.validatePresenceOfUSD(message);
+
     if (!doesIncludeUSD) {
       console.log('Invalid currency conversion: missing USD.');
       //TODO send an email informing user the conversion is not supported
@@ -62,15 +67,23 @@ export class AppService {
             message.fromCurrency,
             message.amount,
           );
-        //TODO send email to client
+
+        this.emailService.sendEmail(
+          message.email,
+          `Your exchange rate request:\n${message.amount} ${message.fromCurrency} = ${convertedAmount} USD`,
+        );
       }
+
       if (message.fromCurrency === 'USD') {
         const convertedAmount =
           await this.exchangeConversionService.convertFromUSD(
             message.toCurrency,
             message.amount,
           );
-        //TODO send email to client
+        this.emailService.sendEmail(
+          message.email,
+          `Your exchange rate request:\n${message.amount} USD = ${convertedAmount} ${message.fromCurrency}`,
+        );
       }
     } catch (error) {
       console.log(`Could not process conversion request.`);
@@ -85,7 +98,10 @@ export class AppService {
           await this.exchangeConversionService.getCurrencyExchangeRateRelativeToUSD(
             message.fromCurrency,
           );
-        //TODO send email to client
+        this.emailService.sendEmail(
+          message.email,
+          `Your exchange rate request:\n1 ${message.fromCurrency} = ${currencyExchangeRateRelativeToUSD} USD`,
+        );
       } else if (message.toCurrency === 'USD') {
         const currencyExchangeRateRelativeToUSD =
           await this.exchangeConversionService.getCurrencyExchangeRateRelativeToUSD(
@@ -93,7 +109,10 @@ export class AppService {
           );
         const currencyExchangeRateRelativeToCurrency =
           1 / currencyExchangeRateRelativeToUSD;
-        //TODO send email to client
+        this.emailService.sendEmail(
+          message.email,
+          `Your exchange rate request:\n1 USD = ${currencyExchangeRateRelativeToCurrency} ${message.fromCurrency}`,
+        );
       }
     } catch (error) {
       console.log(`Could not process conversion request.`);
@@ -117,23 +136,21 @@ export class AppService {
     });
 
     squiss.on('message', async (message: Message) => {
-      const messageBody = JSON.stringify(message.body.message);
+      const messageBody = message.body.message;
+      const messageBodyString = JSON.stringify(message.body.message);
       console.log(
-        `${message.body.name} says: ${messageBody} and has no attributes`,
+        `${message.body.name} says: ${messageBodyString} and has no attributes`,
       );
-      this.sanitizeSQSMessage(message.body.message);
+      this.sanitizeSQSMessage(messageBody);
 
       if (message.body.name === 'conversion_request') {
-        const isValidRequest = this.isRequestValid(message.body.message);
-        isValidRequest
-          ? this.handleConversionRequest(message.body.message)
-          : null;
+        const isValidRequest = this.isRequestValid(messageBody);
+        console.log('isValidRequest: ', isValidRequest)
+        isValidRequest ? this.handleConversionRequest(messageBody) : null;
       }
       if (message.body.name === 'exchange_rate_request') {
-        const isValidRequest = this.isRequestValid(message.body.message);
-        isValidRequest
-          ? this.handleExchangeRateRequest(message.body.message)
-          : null;
+        const isValidRequest = this.isRequestValid(messageBody);
+        isValidRequest ? this.handleExchangeRateRequest(messageBody) : null;
       }
 
       message.del().then(() => {
