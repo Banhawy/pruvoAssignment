@@ -1,9 +1,13 @@
 version: '3.4'
 services:
   currency_coverter:
-    build: ./ConversionRateService .
+    build:
+      context: ./ConversionRateService
+      dockerfile: dev.dockerfile
     ports:
-      - '4000:3000'
+      - '4000:4000'
+    volumes:
+      - ./ConversionRateService:/usr/local/bin/ConversionRateService
   sqs:
     image: roribio16/alpine-sqs
   rest_api:
