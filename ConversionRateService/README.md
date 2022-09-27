@@ -1,9 +1,35 @@
-# TS-STARTER
+## Description
 
-Simple starter project for typescript
+This service is built with [Nestjs](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-If you need to wait on other services to start you can use in the docker file:
+## Installation
 
+```bash
+$ yarn install
 ```
-CMD [ "./wait.sh" , "lcoalhost:3000", "--", "node", "index.js" ]
+
+## Running the app
+
+```bash
+# development
+$ yarn run start
+
+# watch mode
+$ yarn run start:dev
+
+# production mode
+$ yarn run start:prod
+```
+
+## Test
+
+```bash
+# unit tests
+$ yarn run test
+
+# e2e tests
+$ yarn run test:e2e
+
+# test coverage
+$ yarn run test:cov
 ```
