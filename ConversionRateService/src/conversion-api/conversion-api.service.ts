@@ -8,7 +8,9 @@ export class ConversionApiService {
 
   private api = `https://openexchangerates.org/api/latest.json?app_id=${process.env.OPENXE_APP_ID}&base=USD`;
 
-  async getCurrencyExchangeRateRelativeToUSD(currency: string) {
+  async getCurrencyExchangeRateRelativeToUSD(
+    currency: string,
+  ): Promise<number> {
     try {
       const { data } = await this.getLatestRatesByUSD();
       if (!data.rates[currency]) {
@@ -16,7 +18,7 @@ export class ConversionApiService {
         console.log(errorMessage);
         throw new Error(errorMessage);
       }
-      return data.rates[currency];
+      return Number(data.rates[currency]).valueOf();
     } catch (error) {
       console.log('Error calling API');
       throw new Error(error);
@@ -32,7 +34,7 @@ export class ConversionApiService {
       const exchangeRate = await this.getCurrencyExchangeRateRelativeToUSD(
         currency,
       );
-      const convertedAmount = amount * exchangeRate;
+      const convertedAmount = amount / exchangeRate;
       return convertedAmount;
     } catch (error) {
       console.log(`Error Converting ${currency} to USD`);
@@ -45,7 +47,7 @@ export class ConversionApiService {
       const exchangeRate = await this.getCurrencyExchangeRateRelativeToUSD(
         currency,
       );
-      const convertedAmount = amount / exchangeRate;
+      const convertedAmount = amount * exchangeRate;
       return convertedAmount;
     } catch (error) {
       console.log(`Error Converting ${currency} to USD`);

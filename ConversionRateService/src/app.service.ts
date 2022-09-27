@@ -82,7 +82,7 @@ export class AppService {
           );
         this.emailService.sendEmail(
           message.email,
-          `Your exchange rate request:\n${message.amount} USD = ${convertedAmount} ${message.fromCurrency}`,
+          `Your exchange rate request:\n${message.amount} USD = ${convertedAmount} ${message.toCurrency}`,
         );
       }
     } catch (error) {
@@ -93,14 +93,15 @@ export class AppService {
 
   async handleExchangeRateRequest(message: ExchangeRateRequestMessage) {
     try {
-      if (message.toCurrency === 'USD') {
+      if (message.fromCurrency === 'USD') {
         const currencyExchangeRateRelativeToUSD =
           await this.exchangeConversionService.getCurrencyExchangeRateRelativeToUSD(
-            message.fromCurrency,
+            message.toCurrency,
           );
+
         this.emailService.sendEmail(
           message.email,
-          `Your exchange rate request:\n1 ${message.fromCurrency} = ${currencyExchangeRateRelativeToUSD} USD`,
+          `Your exchange rate request:\n 1 ${message.fromCurrency} = ${currencyExchangeRateRelativeToUSD} ${message.toCurrency}`,
         );
       } else if (message.toCurrency === 'USD') {
         const currencyExchangeRateRelativeToUSD =
@@ -111,7 +112,7 @@ export class AppService {
           1 / currencyExchangeRateRelativeToUSD;
         this.emailService.sendEmail(
           message.email,
-          `Your exchange rate request:\n1 USD = ${currencyExchangeRateRelativeToCurrency} ${message.fromCurrency}`,
+          `Your exchange rate request:\n 1 ${message.fromCurrency} = ${currencyExchangeRateRelativeToCurrency} USD`,
         );
       }
     } catch (error) {
@@ -145,7 +146,7 @@ export class AppService {
 
       if (message.body.name === 'conversion_request') {
         const isValidRequest = this.isRequestValid(messageBody);
-        console.log('isValidRequest: ', isValidRequest)
+        console.log('isValidRequest: ', isValidRequest);
         isValidRequest ? this.handleConversionRequest(messageBody) : null;
       }
       if (message.body.name === 'exchange_rate_request') {
