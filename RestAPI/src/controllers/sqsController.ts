@@ -32,7 +32,13 @@ export async function SendSQSMessage(body: MessageBody) {
         name: 'conversion_request',
         message: body
     }
-    console.log('Sending Message to SQS')
-    squiss.sendMessage(messageToSend, 0);
-    console.log('Message sent!')
+    try {
+        console.log('Sending Message to SQS')
+        const result = await squiss.sendMessage(messageToSend, 0);
+        console.log('Response:', result)
+        console.log('Message sent!')
+        
+    } catch (error) {
+        console.log('Erorrr:', error)
+    }
 }
