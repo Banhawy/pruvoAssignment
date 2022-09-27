@@ -23,7 +23,33 @@ export class ConversionApiService {
     }
   }
 
-  getLatestRatesByUSD(): Promise<AxiosResponse<any>> {
+  private getLatestRatesByUSD(): Promise<AxiosResponse<any>> {
     return this.httpService.axiosRef.get(this.api);
+  }
+
+  async convertToUSD(currency: string, amount: number) {
+    try {
+      const exchangeRate = await this.getCurrencyExchangeRateRelativeToUSD(
+        currency,
+      );
+      const convertedAmount = amount * exchangeRate;
+      return convertedAmount;
+    } catch (error) {
+      console.log(`Error Converting ${currency} to USD`);
+      throw new Error(error);
+    }
+  }
+
+  async convertFromUSD(currency: string, amount: number) {
+    try {
+      const exchangeRate = await this.getCurrencyExchangeRateRelativeToUSD(
+        currency,
+      );
+      const convertedAmount = amount / exchangeRate;
+      return convertedAmount;
+    } catch (error) {
+      console.log(`Error Converting ${currency} to USD`);
+      throw new Error(error);
+    }
   }
 }
