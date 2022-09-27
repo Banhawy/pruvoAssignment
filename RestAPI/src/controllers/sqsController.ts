@@ -13,11 +13,7 @@ const squiss = new Squiss({
     maxInFlight: 15
 });
 
-type MessageBody = {
-    /**
-     * The value to be converted
-     */
-    amount: number;
+interface ExchangeRateRequestMessage {
     /**
      * The base ('from') currency (3-letter code)
      */
@@ -30,10 +26,21 @@ type MessageBody = {
      * The email to receive the result at
      */
     email: string;
+    /**
+     * The value to be converted
+     */
+    amount: number;
 }
-export async function SendSQSMessage(body: MessageBody) {
+
+interface ConversionRequestMessage extends ExchangeRateRequestMessage {
+    amount: number;
+}
+
+type MessageBody = ExchangeRateRequestMessage | ConversionRequestMessage
+
+async function sendSQSMessage(body: MessageBody, requestType: 'conversion_request' | 'exchange_rate_request') {
     const messageToSend = {
-        name: 'conversion_request',
+        name: requestType,
         message: body
     }
     try {
@@ -41,8 +48,32 @@ export async function SendSQSMessage(body: MessageBody) {
         const result = await squiss.sendMessage(messageToSend, 0);
         console.log('Response:', result)
         console.log('Message sent!')
-        
+        return result;
+
     } catch (error) {
-        console.log('Erorrr:', error)
+        console.log('Error:', error)
+    }
+}
+
+export async function sendConversionRequest(body: ConversionRequestMessage) {
+    try {
+        console.log('Sending conversion request');
+        const response = await sendSQSMessage(body, 'conversion_request');
+        return response;
+    } catch (error) {
+        console.log('Error:', error)
+        throw new Error('Internal Server Error');
+
+    }
+}
+
+export async function sendExchangeRateRequest(body: ExchangeRateRequestMessage) {
+    try {
+        const response = await sendSQSMessage(body, 'exchange_rate_request');
+        return response;
+    } catch (error) {
+        console.log('Error:', error)
+        throw new Error('Internal Server Error');
+
     }
 }
