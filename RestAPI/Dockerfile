@@ -1,11 +1,18 @@
-FROM node:16.15.1
+FROM node:14-alpine
 
-RUN mkdir src
-WORKDIR /src
-COPY package.json /src/package.json
-COPY ./dist /src/dist
-RUN yarn install
+ENV PORT=3000
 
+RUN mkdir app
+WORKDIR /app
+COPY package.json /app/package.json
+COPY yarn.lock /app/yarn.lock
+COPY tsconfig.json /app/tsconfig.json
+COPY index.ts /app/index.ts
+COPY ./dist /app/dist
+
+RUN DOCKER_ENV=1 yarn install --frozen-lockfile --production
+
+WORKDIR /app/dist
 EXPOSE 3000
 
-CMD [ "node", "/src/dist/index.js" ]
+CMD [ "node", "index.js" ]
