@@ -134,6 +134,11 @@ export class AppService {
       bodyFormat: 'json',
       maxInFlight: 15,
       idlePollIntervalMs: 500,
+      pollRetryMs: 5000,
+    });
+
+    squiss.on('error', (error: Error) => {
+      console.log(`squiss error ${error}`);
     });
 
     squiss.on('message', async (message: Message) => {

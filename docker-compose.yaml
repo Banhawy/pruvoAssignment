@@ -1,15 +1,17 @@
 version: '3.4'
 services:
+  sqs:
+    image: roribio16/alpine-sqs
+    ports:
+      - '9324:9324'
   currency_coverter:
     build:
       context: ./ConversionRateService
       dockerfile: Dockerfile
     ports:
       - '4000:4000'
-  sqs:
-    image: roribio16/alpine-sqs
-    ports:
-      - '9324:9324'
+    depends_on:
+      - sqs
   rest_api:
     build:
       context: ./RestAPI
