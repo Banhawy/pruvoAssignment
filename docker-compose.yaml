@@ -10,6 +10,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - '4000:4000'
+    env_file:
+      - ./ConversionRateService/.env
     depends_on:
       - sqs
   rest_api:
